@@ -6,18 +6,22 @@ import (
 	"net"
 	"time"
 
-	pbctrace "testserver/internal/opentelemetry-proto-gen/collector/trace/v1"
 	"testserver/retry"
+
+	pbctrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
 func main() {
+	fmt.Println("Starting Test Server")
 	for code, tt := range RetryServers {
 		name := fmt.Sprintf("RetryTest - %s (%d)", code.String(), int(code))
 		handler := retry.New(name, tt.count, tt.minTime, tt.maxTime, code)
-		newOtelServer(handler, 30000+int(code))
+		port := 30000 + int(code)
+		fmt.Printf("Start - :%d - %s\n", port, name)
+		newOtelServer(handler, port)
 	}
 	for true {
 	}

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	pbctrace "testserver/internal/opentelemetry-proto-gen/collector/trace/v1"
+	pbctrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,6 +21,8 @@ type Handler struct {
 
 	msgs    chan string
 	started chan struct{}
+
+	pbctrace.UnimplementedTraceServiceServer
 }
 
 func New(name string, count int, min, max time.Duration, errCode codes.Code) *Handler {
