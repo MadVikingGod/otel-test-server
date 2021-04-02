@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	pbctrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
 	"google.golang.org/grpc/codes"
@@ -80,8 +82,9 @@ func (h *Handler) startTest(ctx context.Context, id string) {
 			}
 		}
 	}()
-	fmt.Println("starting test")
 	startTime := time.Now()
+	log := log.WithField("testName", h.testString)
+	log.Info("starting test")
 	failed := false
 	timeout := time.NewTimer(h.maxDuration)
 	count := 0
@@ -91,14 +94,17 @@ func (h *Handler) startTest(ctx context.Context, id string) {
 			timeout.Stop()
 			goto done
 		case reqID := <-h.msgs:
+			log := log
 			if reqID != id {
 				// If IDs don't match it's not a retry
 				continue
 			}
 			if time.Now().Before(startTime.Add(h.minDuration)) {
+				log = log.WithField("earlyRetry", true)
 				failed = true
 			}
 			count++
+			log.WithField("count", count).Debug("retry")
 		}
 	}
 done:
